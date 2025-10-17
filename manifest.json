@@ -1,0 +1,16 @@
+{
+  "name": "For You — Birthday",
+  "short_name": "For You",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#071019",
+  "theme_color": "#0a1420",
+  "icons": [
+    {
+      "src": "photo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

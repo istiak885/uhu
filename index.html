@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>For You — Birthday</title>
+<meta name="theme-color" content="#0a1420">
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="For You">
+<link rel="apple-touch-icon" href="photo.jpg">
+<style>
+  :root{
+    --bg:#071019; --ink:#eaf3fb; --muted:#a7b6c3;
+    --accent:#33ff77; --rose:#ff6aa6; --glass:rgba(255,255,255,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #0d1b2a 0%, #071019 50%, #04070d 100%);
+    color:var(--ink); font-family:Inter, ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%;
+    overflow:hidden;
+  }
+
+  /* always-on countdown */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; height:54px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    background:linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,0)); z-index:20;
+  }
+  .badge{background:var(--glass); border:1px solid rgba(255,255,255,.06); color:#dff7ea;
+    padding:8px 14px; border-radius:999px; font-weight:800; font-size:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.25)}
+  .small{font-size:12px; color:var(--muted)}
+
+  .stage{position:fixed; inset:0; display:flex; align-items:center; justify-content:center}
+  .terminal{
+    width:min(960px, 92%); color:#afffca;
+    border:1px solid rgba(51,255,119,.08); border-radius:14px;
+    padding:18px; background:linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.25));
+    font-family:"SFMono-Regular","Courier New",monospace;
+    box-shadow:0 10px 50px rgba(0,0,0,.55)
+  }
+  .logs{height:34vh; overflow:hidden; white-space:pre-wrap; font-size:13px; line-height:1.5}
+  .timerBig{margin-top:12px; text-align:center; background:var(--glass); border-radius:12px; padding:16px}
+  .timerTxt{font-size:44px; letter-spacing:1px; color:#fff}
+  .labels{font-size:12px; color:var(--muted)}
+
+  .reveal{position:fixed; inset:0; visibility:hidden; opacity:0;
+    transition:opacity .8s ease, visibility .2s ease;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); z-index:10;}
+  .reveal.show{visibility:visible; opacity:1;}
+  .frame{position:absolute; inset:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; padding-top:56px;}
+  .quotesWallpaper{position:absolute; inset:0; overflow:hidden; pointer-events:none;
+    opacity:.16; z-index:-1; display:grid; grid-template-columns:repeat(3, 1fr);
+    gap:24px; padding:60px 24px 24px;}
+  .qCol{display:flex; flex-direction:column; gap:18px; animation: drift 26s linear infinite;}
+  .qCol:nth-child(2){animation-duration:30s;}
+  .qCol:nth-child(3){animation-duration:34s;}
+  @keyframes drift{0%{transform:translateY(0)}50%{transform:translateY(-20px)}100%{transform:translateY(0)}}
+  .quote{font-weight:600; line-height:1.35; color:#fff; text-shadow:0 2px 10px rgba(0,0,0,.25);}
+  .card{width:min(980px, 92%); border-radius:18px; padding:18px 18px 22px;
+    background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.06); box-shadow:0 22px 90px rgba(2,6,23,.7);
+    display:flex; flex-direction:column; align-items:center; gap:14px;}
+  .headline{font-size:28px; font-weight:900; margin:0; text-align:center;
+    background:linear-gradient(90deg,#ffffff,#b3ffd8,#9fe1ff);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 10px 34px rgba(51,255,119,.08)}
+  .photo{width:min(420px, 80vw); max-height:52vh; object-fit:cover;
+    border-radius:14px; display:block; box-shadow:0 16px 60px rgba(0,0,0,.55);
+    transform:translateY(8px); transition:transform .9s cubic-bezier(.2,.9,.1,1)}
+  .sig{margin-top:2px; color:#ffd9e8; font-weight:800}
+  .musicHint{position:absolute; bottom:18px; right:18px;
+    background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+    color:#fff; padding:8px 10px; border-radius:999px;
+    font-size:12px; display:none; cursor:pointer; backdrop-filter: blur(8px);}
+  .musicHint.show{display:inline-flex; align-items:center; gap:6px}
+  .hearts{position:absolute; inset:0; pointer-events:none}
+  .heart{position:absolute; color:var(--rose); font-size:16px; opacity:.65;
+    animation: floatUp 9s linear infinite}
+  @keyframes floatUp{0%{transform:translateY(10vh) scale(.8); opacity:0}
+    10%{opacity:.85}100%{transform:translateY(-110vh) scale(1.2); opacity:0}}
+  @media (max-width:760px){
+    .timerTxt{font-size:34px} .headline{font-size:22px} .photo{max-height:48vh}
+    .quotesWallpaper{gap:14px; padding:58px 14px 14px}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="badge">Countdown: <span id="countTxt">-- : -- : -- : --</span></div>
+  <div class="small">to 18 Oct 00:01</div>
+</div>
+
+<div id="stage1" class="stage">
+  <div class="terminal">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div style="width:10px;height:10px;border-radius:50%;background:#ff5f56;"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:#ffbd2e;"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:#27c93f;"></div>
+      <strong style="color:#c7d2d9;margin-left:6px;font-size:13px">SYSTEM BOOT • Surprise Loader</strong>
+    </div>
+    <div id="logs" class="logs" style="margin-top:12px;"></div>
+    <div class="timerBig">
+      <div class="timerTxt" id="bigTimer">-- : -- : -- : --</div>
+      <div class="labels">days : hours : minutes : seconds</div>
+    </div>
+  </div>
+</div>
+
+<div id="reveal" class="reveal">
+  <div class="frame">
+    <div class="quotesWallpaper" id="wall"></div>
+    <div class="hearts" id="hearts"></div>
+    <div class="card">
+      <h1 class="headline">happy birthday my gori garl</h1>
+      <img id="photo" class="photo" src="photo.jpg" alt="Photo">
+      <div class="sig">— Istiak</div>
+    </div>
+    <div id="musicHint" class="musicHint">🎵 Tap for music</div>
+  </div>
+</div>
+
+<div id="notifyPill"
+ style="position:fixed;bottom:18px;left:18px;z-index:99;
+ background:rgba(255,255,255,.12);color:#fff;padding:10px 12px;
+ border:1px solid rgba(255,255,255,.2);border-radius:999px;
+ font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(8px);">
+ 🔔 Enable reminder
+</div>
+
+<audio id="bgm" preload="auto" src="song.mp3"></audio>
+
+<script src="push-client.js"></script>
+<script>
+const QUOTES=["Every hour with you feels like minutes; every minute without you feels like years.","Your smile is my favorite place to be.","You are my today and all of my tomorrows.","Home isn’t a place; it’s your hand in mine.","You are the poem I never knew how to write.","The world is softer with you in it.","You are the wish I didn’t know I was making."];
+const TARGET_DAY=18,TARGET_MONTH=10,TARGET_HOUR=0,TARGET_MIN=1;
+const target=(()=>{const n=new Date();let d=new Date(n.getFullYear(),TARGET_MONTH-1,TARGET_DAY,TARGET_HOUR,TARGET_MIN,0,0);if(d<=n)d=new Date(n.getFullYear()+1,TARGET_MONTH-1,TARGET_DAY,TARGET_HOUR,TARGET_MIN,0,0);return d})();
+const logs=document.getElementById('logs'),bigT=document.getElementById('bigTimer'),badge=document.getElementById('countTxt'),stage=document.getElementById('stage1'),reveal=document.getElementById('reveal'),photo=document.getElementById('photo'),bgm=document.getElementById('bgm'),musicHint=document.getElementById('musicHint');
+["init sequence 0x00A1… OK","loading modules: heartsync, bloomFx, aurora","allocating memory for moments… done","checking birthday schedule… found 18 Oct","warming audio buffer… ready","finalizing message packet… OK","standing by for 00:01 reveal ✨"].forEach((l,i)=>setTimeout(()=>{logs.textContent+=`> ${l}\n`;logs.scrollTop=logs.scrollHeight},i*700));
+function fmt(n){return String(n).padStart(2,'0')}
+function tick(){const n=new Date();let m=target-n;if(m<0)m=0;const s=Math.floor(m/1e3),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),mi=Math.floor(s%3600/60),se=s%60,t=`${fmt(d)} : ${fmt(h)} : ${fmt(mi)} : ${fmt(se)}`;bigT.textContent=t;badge.textContent=t;if(m===0)revealNow()}
+tick();setInterval(tick,250);
+const wall=document.getElementById('wall');(()=>{const p=Math.ceil(QUOTES.length/3);for(let c=0;c<3;c++){const col=document.createElement('div');col.className='qCol';for(let i=c*p;i<Math.min((c+1)*p,QUOTES.length);i++){const q=document.createElement('div');q.className='quote';q.textContent=QUOTES[i];col.appendChild(q)}wall.appendChild(col)}})();
+let done=false;function revealNow(){if(done)return;done=true;stage.style.opacity='0';stage.style.pointerEvents='none';reveal.classList.add('show');setTimeout(()=>photo.style.transform='translateY(0) scale(1.02)',50);spawnHearts();tryPlay()}
+function tryPlay(){bgm.muted=false;const p=bgm.play();if(p&&p.catch)p.catch(()=>musicHint.classList.add('show'))}
+musicHint.addEventListener('click',()=>{musicHint.classList.remove('show');tryPlay()});
+function spawnHearts(){const b=document.getElementById('hearts'),W=innerWidth;function one(){const h=document.createElement('div');h.className='heart';h.textContent='♥';h.style.left=(Math.random()*W)+'px';h.style.fontSize=(14+Math.random()*10)+'px';h.style.animationDuration=(7+Math.random()*6)+'s';h.style.opacity=.5+Math.random()*.4;b.appendChild(h);setTimeout(()=>b.removeChild(h),14000)}for(let i=0;i<10;i++)one();setInterval(one,700)}
+onload=()=>{if(new Date()>=target)revealNow()}
+</script>
+</body>
+</html>
