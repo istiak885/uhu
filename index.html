@@ -137,7 +137,7 @@
 <script src="push-client.js"></script>
 <script>
 const QUOTES=["Every hour with you feels like minutes; every minute without you feels like years.","Your smile is my favorite place to be.","You are my today and all of my tomorrows.","Home isn’t a place; it’s your hand in mine.","You are the poem I never knew how to write.","The world is softer with you in it.","You are the wish I didn’t know I was making."];
-const TARGET_DAY=18,TARGET_MONTH=10,TARGET_HOUR=22,TARGET_MIN=1;
+const TARGET_DAY=18,TARGET_MONTH=10,TARGET_HOUR=0,TARGET_MIN=1;
 const target=(()=>{const n=new Date();let d=new Date(n.getFullYear(),TARGET_MONTH-1,TARGET_DAY,TARGET_HOUR,TARGET_MIN,0,0);if(d<=n)d=new Date(n.getFullYear()+1,TARGET_MONTH-1,TARGET_DAY,TARGET_HOUR,TARGET_MIN,0,0);return d})();
 const logs=document.getElementById('logs'),bigT=document.getElementById('bigTimer'),badge=document.getElementById('countTxt'),stage=document.getElementById('stage1'),reveal=document.getElementById('reveal'),photo=document.getElementById('photo'),bgm=document.getElementById('bgm'),musicHint=document.getElementById('musicHint');
 ["init sequence 0x00A1… OK","loading modules: heartsync, bloomFx, aurora","allocating memory for moments… done","checking birthday schedule… found 18 Oct","warming audio buffer… ready","finalizing message packet… OK","standing by for 00:01 reveal ✨"].forEach((l,i)=>setTimeout(()=>{logs.textContent+=`> ${l}\n`;logs.scrollTop=logs.scrollHeight},i*700));
@@ -153,5 +153,6 @@ onload=()=>{if(new Date()>=target)revealNow()}
 </script>
 </body>
 </html>
+
 
 
